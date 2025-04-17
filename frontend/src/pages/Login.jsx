@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
-import loginBg from "../assets/images/hospital-bg.jpg"; // Ensure correct path
-import { motion } from "framer-motion"; // Import for animations
+import loginBg from "../assets/images/hospital-bg.jpg";
+import { motion } from "framer-motion";
+import { BASE_URL } from "../config";
+import { AuthContext } from "../context/authContext.jsx";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -11,8 +14,11 @@ const Login = () => {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Set dynamic welcome message
+  const navigate = useNavigate();
+  const { dispatch } = useContext(AuthContext);
+
   useEffect(() => {
     const hour = new Date().getHours();
     setWelcomeMessage(
@@ -24,11 +30,9 @@ const Login = () => {
     );
   }, []);
 
-  // Handle input changes
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    // Password strength checker
     if (e.target.name === "password") {
       const value = e.target.value;
       if (value.length < 6) setPasswordStrength("Weak 🔴");
@@ -37,17 +41,45 @@ const Login = () => {
     }
   };
 
-  // Handle login
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (isLocked) return;
+  const submitHandler = async (event) => {
+    event.preventDefault();
+    setLoading(true);
 
-    if (formData.email === "user@example.com" && formData.password === "password123") {
-      alert("✨ Login Successful!");
-      setLoginAttempts(0);
-    } else {
-      setLoginAttempts((prev) => prev + 1);
-      if (loginAttempts >= 2) setIsLocked(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message);
+      }
+
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: {
+          user: result.data,
+          role: result.role,
+          token: result.token,
+        },
+      });
+
+      // ✅ Save to localStorage
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.data));
+
+      toast.success(result.message);
+      setLoading(false);
+      navigate('/home');
+    } catch (error) {
+      toast.error(`❌ ${error.message}`);
+      console.error("❌ Login Error:", error.message);
+      setLoading(false);
     }
   };
 
@@ -56,21 +88,18 @@ const Login = () => {
       className="relative flex items-center justify-center min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
-      {/* Dark overlay for contrast */}
       <div className="absolute inset-0 bg-black bg-opacity-60"></div>
 
-      {/* Login Card */}
       <motion.div
         className="relative w-full max-w-[500px] bg-white bg-opacity-20 backdrop-blur-lg shadow-2xl rounded-xl p-8 text-white border border-gray-200/40"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <h3 className="text-4xl font-extrabold text-center text-white mb-2 drop-shadow-lg">{welcomeMessage}</h3>
+        <h3 className="text-4xl font-extrabold text-center mb-2">{welcomeMessage}</h3>
         <p className="text-center text-gray-200 mb-6">Welcome Back! Let’s Get You In. 🔐</p>
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          {/* Email Input */}
+        <form onSubmit={submitHandler} className="space-y-5">
           <div className="relative">
             <input
               type="email"
@@ -84,7 +113,6 @@ const Login = () => {
             <FaEnvelope className="absolute top-3 right-3 text-gray-300" />
           </div>
 
-          {/* Password Input */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -104,7 +132,6 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Password Strength Indicator */}
           {formData.password && (
             <motion.p
               className={`text-sm font-medium ${
@@ -120,7 +147,6 @@ const Login = () => {
             </motion.p>
           )}
 
-          {/* Locked Message */}
           {isLocked && (
             <motion.p
               className="text-red-400 text-center font-semibold"
@@ -131,7 +157,6 @@ const Login = () => {
             </motion.p>
           )}
 
-          {/* Submit Button */}
           <motion.button
             type="submit"
             className={`relative w-full text-white text-lg font-bold px-6 py-3 rounded-xl shadow-xl transition-all transform
@@ -139,15 +164,12 @@ const Login = () => {
                 isLocked ? "bg-red-500 cursor-not-allowed animate-shake" : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-pink-500"
               }`}
             disabled={isLocked}
-            whileHover={{ scale: 1.1, boxShadow: "0px 0px 15px rgba(255, 105, 180, 0.8)" }}
-            whileTap={{ scale: 0.9 }}
-            animate={isLocked ? { x: [0, -5, 5, -5, 5, 0] } : { opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isLocked ? "🚫 Locked" : "🚀 Login"}
+            {loading ? "Logging in..." : isLocked ? "🚫 Locked" : "🚀 Login"}
           </motion.button>
 
-          {/* Register Link */}
           <p className="mt-4 text-center text-gray-200">
             Don&apos;t have an account?{" "}
             <Link to="/register" className="text-pink-300 font-semibold hover:underline">

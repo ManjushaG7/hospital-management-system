@@ -29,6 +29,8 @@ export const authenticate = async(req, res, next) => {
       req.userId = decoded.id;
       req.role = decoded.role;
       
+
+      console.log("Decoded JWT:", decoded);
       next();// must be call the next function
   
     } catch (err) {

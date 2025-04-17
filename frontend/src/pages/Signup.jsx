@@ -40,7 +40,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/auth/register`, {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,14 +51,22 @@ const Signup = () => {
       const { message } = await res.json();
 
       if (!res.ok) {
-        throw new Error(message);
+        // Show custom error for existing user
+        if (message.toLowerCase().includes('already')) {
+          toast.error("🚫 User already exists! Try logging in.");
+        } else {
+          throw new Error(message);
+        }
+        setLoading(false);
+        return;
       }
 
+      // Show success message
+      toast.success("🎉 User created successfully!");
       setLoading(false);
-      toast.success(message);
       navigate('/login');
     } catch (error) {
-      toast.error(error.message);
+      toast.error(`❌ ${error.message}`);
       setLoading(false);
       console.log("Form data before submit:", formData);
     }
