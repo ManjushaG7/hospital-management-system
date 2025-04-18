@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useReducer } from 'react';
+import React, { createContext, useContext, useEffect, useReducer, useState } from 'react';
 
 // Initial state of the auth context
 const initialState = {
@@ -42,6 +42,7 @@ const authReducer = (state, action) => {
 
 export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const [loading, setLoading] = useState(true); // 🧑‍💻 Keep track of loading state
 
   useEffect(() => {
     // Restore auth state from localStorage on page load
@@ -59,6 +60,8 @@ export const AuthContextProvider = ({ children }) => {
         },
       });
     }
+
+    setLoading(false); // 🧑‍💻 Mark as not loading once the state is restored
   }, []);
 
   return (
@@ -68,6 +71,7 @@ export const AuthContextProvider = ({ children }) => {
         token: state.token,
         role: state.role,
         dispatch,
+        loading, // 🧑‍💻 Expose loading state
       }}
     >
       {children}
