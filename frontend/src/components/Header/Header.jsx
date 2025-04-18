@@ -5,6 +5,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { BiMenu, BiX, BiUser, BiLogOut } from "react-icons/bi";
 import { FaHome, FaStethoscope, FaPhoneAlt } from "react-icons/fa";
 import { AuthContext } from '../../context/authContext.jsx';
+import Loader from '../../components/Loader/Loading';
 
 const navLinks = [
   { path: "/home", display: "Home", icon: <FaHome className="w-5 h-5" /> },
@@ -15,7 +16,7 @@ const navLinks = [
 const Header = () => {
   const headerRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, role, token, dispatch } = useContext(AuthContext);
+  const { user, role, token, dispatch,loading } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleStickyHeader = () => {
@@ -31,6 +32,8 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleStickyHeader);
   }, []);
 
+ 
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const logoutHandler = () => {
@@ -38,6 +41,13 @@ const Header = () => {
     localStorage.clear();
     navigate("/login");
   };
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-10 bg-white dark:bg-gray-900 shadow">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <header

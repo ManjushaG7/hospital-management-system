@@ -18,18 +18,20 @@ const authReducer = (state, action) => {
         role: null,
       };
     case 'LOGIN_SUCCESS':
-      // Save to localStorage
+      // ✅ Save to localStorage
       localStorage.setItem('token', action.payload.token);
       localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.setItem('role', action.payload.role); // ✅ Save role explicitly
       return {
         user: action.payload.user,
         token: action.payload.token,
-        role: action.payload.role,  // Ensure the role is handled correctly
+        role: action.payload.role,
       };
     case 'LOGOUT':
-      // Clear from localStorage when logging out
+      // ✅ Clear from localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('role'); // ✅ Clear role too
       return {
         user: null,
         token: null,
@@ -42,26 +44,27 @@ const authReducer = (state, action) => {
 
 export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
-  const [loading, setLoading] = useState(true); // 🧑‍💻 Keep track of loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore auth state from localStorage on page load
+    // ✅ Restore from localStorage on load
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
+    const savedRole = localStorage.getItem('role');
 
-    if (savedToken && savedUser) {
+    if (savedToken && savedUser && savedRole) {
       const parsedUser = JSON.parse(savedUser);
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: {
           token: savedToken,
           user: parsedUser,
-          role: parsedUser?.role || 'patient', // Default to 'patient' if role is missing
+          role: savedRole,
         },
       });
     }
 
-    setLoading(false); // 🧑‍💻 Mark as not loading once the state is restored
+    setLoading(false);
   }, []);
 
   return (
@@ -71,7 +74,7 @@ export const AuthContextProvider = ({ children }) => {
         token: state.token,
         role: state.role,
         dispatch,
-        loading, // 🧑‍💻 Expose loading state
+        loading, // ✅ Expose loading state
       }}
     >
       {children}

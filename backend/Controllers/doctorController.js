@@ -2,18 +2,48 @@ import Doctor from "../models/DoctorSchema.js";
 import Booking from "../models/BookingSchema.js";
 
 
-export const updateDoctor = async(req, res) => {
-    const id = req.params.id
+export const updateDoctor = async (req, res) => {
+    const id = req.params.id;
     
     try {
+        // Destructure req.body to ensure photo and other fields are included
+        const { name, email, phone, photo, specialization, qualifications, experiences, bio, about, ticketPrice, role } = req.body;
+        
+        // Update the doctor's profile
+        const updatedDoctor = await Doctor.findByIdAndUpdate(
+            id,
+            { 
+                $set: {
+                    name, 
+                    email, 
+                    phone, 
+                    photo,  // Ensure the photo URL is updated
+                    specialization, 
+                    qualifications, 
+                    experiences, 
+                    bio, 
+                    about, 
+                    ticketPrice, 
+                    role 
+                }
+            },
+            { new: true }  // This returns the updated document
+        );
 
-       const updatedDoctor = await Doctor.findByIdAndUpdate (id, {$set:req.body}, {new:true})
+        // If no doctor is found with the given id, return an error
+        if (!updatedDoctor) {
+            return res.status(404).json({ success: false, message: "Doctor not found" });
+        }
 
-     res.status(200).json({success: true, message: 'Successfully updated', data: updatedDoctor})
-
+        // Respond with the updated doctor data
+        res.status(200).json({
+            success: true,
+            message: "Successfully updated doctor profile",
+            data: updatedDoctor,
+        });
+        
     } catch (err) {
-        res.status(500).json({success: false, message: "Failed to update Doctor"})
-
+        res.status(500).json({ success: false, message: "Failed to update doctor profile" });
     }
 };
 

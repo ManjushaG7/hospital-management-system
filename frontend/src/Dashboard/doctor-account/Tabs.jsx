@@ -1,17 +1,23 @@
-import {useContext} from 'react';
+import { useContext, useState } from 'react';
 import { BiMenu } from 'react-icons/bi';
 import { AuthContext } from '../../context/authContext';
 import { useNavigate } from 'react-router-dom';
 
 const Tabs = ({ tab, setTab }) => {
+  const { dispatch } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const {dispatch} = useContext(AuthContext)
-    const navigate = useNavigate()
+  const [isAvailable, setIsAvailable] = useState(true); // Default: Available
 
-    const handleLogout = () => {
-        dispatch({type: "LOGOUT"})
-        navigate('/')
-    }
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    navigate('/');
+  };
+
+  const toggleAvailability = () => {
+    setIsAvailable((prev) => !prev);
+    // Optional: send API call to update doctor availability status
+  };
 
   return (
     <div>
@@ -22,6 +28,21 @@ const Tabs = ({ tab, setTab }) => {
 
       {/* Tabs for Desktop */}
       <div className="hidden lg:flex flex-col p-5 bg-white shadow-panelShadow items-center h-max rounded-xl">
+        {/* Availability Toggle */}
+        <div className="mb-6 w-full text-center">
+          <p className="text-sm font-semibold mb-1 text-gray-700">Availability</p>
+          <button
+            onClick={toggleAvailability}
+            className={`w-full py-2 rounded-md font-medium transition-all duration-200 ${
+              isAvailable
+                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                : 'bg-red-100 text-red-700 hover:bg-red-200'
+            }`}
+          >
+            {isAvailable ? 'Available' : 'Unavailable'}
+          </button>
+        </div>
+
         {/* Overview Tab */}
         <button
           onClick={() => setTab('overview')}
@@ -55,21 +76,20 @@ const Tabs = ({ tab, setTab }) => {
               : 'bg-transparent text-[#181A1E] hover:bg-[#e0eaff]'
           } w-full py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out mt-3`}
         >
-          Settings
+          Profile
         </button>
-    
-        <div className='mt-[100px] w-full'>
-            <button 
+
+        <div className="mt-[100px] w-full">
+          <button
             onClick={handleLogout}
-            className='w-full bg-[#181A1E] p-3 text-[16px] leading-7 rounded-md text-white'>
+            className="w-full bg-[#181A1E] p-3 text-[16px] leading-7 rounded-md text-white"
+          >
             Logout
-            </button>
-            <button className='w-full bg-red-600 mt-4 p-3 text-[16px] leading-7 rounded-md text-white'>
-                Delete Account
-            </button>
-
+          </button>
+          <button className="w-full bg-red-600 mt-4 p-3 text-[16px] leading-7 rounded-md text-white">
+            Delete Account
+          </button>
         </div>
-
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import { FaUserMd, FaGraduationCap, FaHospital, FaAward } from "react-icons/fa";
 
-const DoctorAbout = () => {
+const DoctorAbout = ({name, about, qualifications, experiences}) => {
   return (
     <div className="mt-5">
       {/* Header */}
