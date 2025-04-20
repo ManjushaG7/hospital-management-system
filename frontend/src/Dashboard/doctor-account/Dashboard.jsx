@@ -8,6 +8,7 @@ import userImg from "../../assets/images/doctor-img01.png";
 import starIcon  from '../../assets/images/Star.png'
 import DoctorAbout from '../../pages/Doctors/DoctorAbout'
 import Profile from './Profile';
+import Appointments from './Appointments';
 
 const Dashboard = () => {
   const { data, loading, error } = useFetchData(`${BASE_URL}/api/v1/doctors/profile/me`);
@@ -40,39 +41,52 @@ const Dashboard = () => {
 
               {/* Tab Content Section */}
               <div className="tab-content">
-                {tab === 'overview' && <div>
-                  <div className='flex items-center gap-4 mb-10'>
-                    <figure className='max-w-[200px] max-h-[200px]'><img src={data ?.photo || userImg} alt="" className='w-full'/></figure>
+  {tab === 'overview' && (
+    <div className="border-2 border-gray-300 rounded-xl p-6 shadow-md bg-white">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-8">
+        {/* Profile Image */}
+        <figure className="w-[180px] h-[180px] overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+          <img src={data?.photo || userImg} alt="Doctor" className="w-full h-full object-cover" />
+        </figure>
 
-                    <div><span className='bg-[#CCF0F3] text-irisBlueColor py-1 px-4 lg:py-2 lg:px-6 rounded text-[12px] leading-4 lg:text-[16px] lg:leading-6 font-semibold'>
-                       Cardiology
-                    </span>
+        {/* Doctor Info */}
+        <div className="text-center md:text-left space-y-2">
+          <span className="inline-block bg-[#CCF0F3] text-irisBlueColor py-1 px-4 lg:py-2 lg:px-6 rounded-full text-[13px] lg:text-[15px] font-medium tracking-wide shadow-sm">
+            {data.specialization}
+          </span>
 
-                    <h3 className='text-[22px] leading-9 font-bold text-headingColor mt-3'>Layla</h3>
-                    <div className='flex items-center gap-[6px]'>
-                      <span className='flex items-center gap-[6px] text-headingColor text-[14px] leading-5 lg:text-[16px] lg:leading-6 font-semibold'><img src={starIcon} alt=''/>4.5</span>
-                      <span className=' text-textColor text-[14px] leading-5 lg:text-[16px] lg:leading-6 font-semibold'>(233)</span>
-                    </div>
+          <h3 className="text-[24px] font-bold text-headingColor mt-2">
+            {data.name}
+          </h3>
 
-                    <p className='text__para font-[15px] lg:max-w-[390px] leading-6'>Doctor Bio</p>
-                  
-                    </div>
+          <div className="flex justify-center md:justify-start items-center gap-4 text-sm lg:text-base font-semibold">
+            <div className="flex items-center gap-1 text-headingColor">
+              <img src={starIcon} alt="Rating" className="w-4 h-4" />
+              {data.averageRating}
+            </div>
+            
+            <span className="text-textColor">({data.totalRating} reviews)</span>
+
+          
+          </div>
+          <div><span>{data.bio}</span></div>
+        </div>
+      </div>
 
 
+      <DoctorAbout
+        name={data.name}
+        about={data.about}
+        qualifications={data.qualifications}
+        experiences={data.experiences}
+        fellowships={data.fellowships}
+      />
+    </div>
+  )}
 
-                  </div>
-                  <DoctorAbout name={data.name} about={data.about} qualifications={data.qualifications} experiences={data.experiences}/>
-                  </div>
-                }
+                {tab === 'appointments' && ( <Appointments appointments={data.appointments}/>)}
 
-                {tab === 'appointments' && (
-                  <div className="appointments-tab">
-                    <h2 className="text-xl font-semibold">📋Appointments</h2>
-                    <p className="mt-2"></p>
-                  </div>
-                )}
-
-                {tab === 'settings' &&  <Profile />
+                {tab === 'settings' &&  <Profile doctorData={data} />
                 }
               </div>
             </div>

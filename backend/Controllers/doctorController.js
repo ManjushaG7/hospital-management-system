@@ -7,7 +7,7 @@ export const updateDoctor = async (req, res) => {
     
     try {
         // Destructure req.body to ensure photo and other fields are included
-        const { name, email, phone, photo, specialization, qualifications, experiences, bio, about, ticketPrice, role } = req.body;
+        const { name, email, phone, photo, specialization, qualifications, experiences, bio, about, opPrice, role,fellowships,timeSlots } = req.body;
         
         // Update the doctor's profile
         const updatedDoctor = await Doctor.findByIdAndUpdate(
@@ -23,8 +23,10 @@ export const updateDoctor = async (req, res) => {
                     experiences, 
                     bio, 
                     about, 
-                    ticketPrice, 
-                    role 
+                    opPrice,
+                    timeSlots, 
+                    role ,
+                    fellowships,
                 }
             },
             { new: true }  // This returns the updated document
@@ -87,10 +89,10 @@ export const getSingleDoctor = async(req, res)=> {
 };
 
 export const getAllDoctor = async(req, res)=> {
-    
+    console.log("✅ getAllDoctor called");
     
     try {
-
+        
         const {query} = req.query
         let doctors;
 
@@ -102,16 +104,20 @@ export const getAllDoctor = async(req, res)=> {
                     {location: {$regex: query, $options: 'i'}},
                 ]
             }).select("-password");
+            
         }else{
              doctors = await Doctor.find ({isApproved: "approved"} ).select("-password");
         }
         
          res.status(200).json({success: true, message: 'Doctors found', data: doctors})
+         
 
     } catch (err) {
+        console.error('Error:', err);
         res.status(404).json({success: false, message: "Not found"})
 
     }
+    
 };
 
 

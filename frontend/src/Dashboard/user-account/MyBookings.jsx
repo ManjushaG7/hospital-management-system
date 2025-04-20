@@ -1,12 +1,13 @@
 import React from "react";
 import useFetchData from "../../hooks/useFetchData";
+import { BASE_URL } from "../../config";
 
 const MyBookings = () => {
   const {
     data: bookings,
     loading,
     error,
-  } = useFetchData("/users/appointments/my-appointments");
+  } = useFetchData(`${BASE_URL}/api/v1/users/appointments/my-appointments`);
 
   if (loading) {
     return <p className="text-center text-blue-600 font-medium">Loading your bookings...</p>;

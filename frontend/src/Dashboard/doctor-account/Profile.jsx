@@ -1,26 +1,196 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {AiOutlineDelete, AiOutlinePlus} from 'react-icons/ai'
+import uploadImageToCloudinary from '../../utils/uploadCloudinary';
+import { BASE_URL , token} from '../../config';
+import { toast } from 'react-toastify';
 
-const Profile = () => {
+const Profile = ({doctorData}) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password:'',
     phone: '',
     bio: '',
     gender: '',
     specialization: '',
     opPrice: 0,
-    qualifications:[{startingDate:'', endingDate:'',degree:'', university:''}],
-    experiences:[{startingDate:'', endingDate:'',position:'', hospital:''}],
-    timeSlots:[{day:'', startingTime:'', endingTime:'',}],
-    about:''
+    qualifications:[],
+    experiences:[],
+    fellowships: [],
+    timeSlots:[],
+    about:'',
+    photo:null
 
   });
+  
+  useEffect(()=>{
+    setFormData({
+      name: doctorData?.name || '',
+      email: doctorData?.email || '',
+    
+      phone: doctorData?.phone || '',
+      bio: doctorData?.bio || '',
+      gender: doctorData?.gender || '',
+      specialization: doctorData?.specialization || '',
+      opPrice: doctorData?.opPrice || 0,
+      qualifications: doctorData?.qualifications || [],
+      experiences: doctorData?.experiences || [],
+      fellowships: doctorData?.fellowships || [],
+      timeSlots: doctorData?.timeSlots || [],
+      about: doctorData?.about || '',
+      photo: doctorData?.photo || null
+
+    })
+  },[doctorData])
+
+
 
   const handleInputChange = (e) => {
     setFormData({ ...formData,[e.target.name]:e.target.value});
   };
 
+  const handleFileInputChange = async event=>{
+    const file = event.target.files[0]
+    const data = await uploadImageToCloudinary(file);
+
+   setFormData({...formData, photo: data?.url})
+
+  }
+
+  const updateProfileHandler = async e => {
+    e.preventDefault();
+    
+    // Retrieve token from localStorage
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      toast.error("You are not authenticated. Please log in.");
+      return; // Early return if no token is found
+    }
+  
+    try {
+      // Make the PUT request
+      const res = await fetch(`${BASE_URL}/api/v1/doctors/${doctorData._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Send the token in the header
+        },
+        body: JSON.stringify(formData), // Send the form data
+      });
+  
+      const result = await res.json(); // Parse the response body
+  
+      // Check if response is ok, if not, throw error
+      if (!res.ok) {
+        throw new Error(result.message || "An error occurred while updating the profile.");
+      }
+  
+      // Show success toast if everything is okay
+      toast.success(result.message || "Profile updated successfully!");
+  
+    } catch (err) {
+      // Handle any error that occurs during the fetch
+      toast.error(err.message || "Something went wrong!");
+    }
+  };
+
+const addItem= (key, item)=>{
+  setFormData(prevFormData=> ({...prevFormData, [key]:[...prevFormData[key], item]}))
+}
+
+const handleReusableInputChangeFunc = (key, index, event)=>{
+   const {name, value} = event.target 
+
+   setFormData(prevFormData => {
+    const updateItems = [...prevFormData[key]]
+
+    updateItems[index][name] = value
+
+    return{
+      ...prevFormData,
+      [key]:updateItems,
+    }
+   })
+
+}
+
+const deleteItem = (key, index)=>{
+  setFormData(prevFormData=> ({...prevFormData, [key]:prevFormData[key].filter((_,i)=>i !== index )
+  }))
+}
+
+  const addQualification = e =>{
+    e.preventDefault()
+
+    addItem('qualifications',{
+      startingDate:'', endingDate:'',degree:'', university:''
+    })
+  }
+
+  const handleQualificationChange = (event,index)=>{
+
+    handleReusableInputChangeFunc('qualifications', index, event)
+  }
+
+  const deleteQualification = (e, index)=>{
+    e.preventDefault()
+    deleteItem('qualifications', index)
+  }
+
+
+  const addExperience = e =>{
+    e.preventDefault()
+
+    addItem('experiences',{startingDate:'', endingDate:'',position:'', hospital:''})
+  }
+
+  const handleExperienceChange = (event,index)=>{
+
+    handleReusableInputChangeFunc('experiences', index, event)
+  }
+
+  const deleteExperience = (e, index)=>{
+    e.preventDefault()
+    deleteItem('experiences', index)
+  }
+
+
+  const addTimeSlot = e =>{
+    e.preventDefault()
+
+    addItem('timeSlots',{day:'', startingTime:'', endingTime:'',})
+  }
+
+  const handleTimeSlotChange = (event,index)=>{
+
+    handleReusableInputChangeFunc('timeSlots', index, event)
+  }
+
+  const deleteTimeSlot = (e, index)=>{
+    e.preventDefault()
+    deleteItem('timeSlots', index)
+  }
+
+  const addFellowship = e => {
+    e.preventDefault();
+    addItem('fellowships', {
+      title: '',
+      organization: '',
+      year: ''
+    });
+  };
+  
+  const handleFellowshipChange = (event, index) => {
+    handleReusableInputChangeFunc('fellowships', index, event);
+  };
+  
+  const deleteFellowship = (e, index) => {
+    e.preventDefault();
+    deleteItem('fellowships', index);
+  };
+
+  console.log(doctorData.fellowships);
   return (
     <div className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-xl">
       <h2 className="text-2xl font-extrabold text-gray-800 mb-8 border-b pb-2">
@@ -59,7 +229,7 @@ const Profile = () => {
             className="w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-gray-500"
             readOnly
             aria-readonly
-            disabled="true"
+            disabled={true}
           />
         </div>
 
@@ -184,6 +354,7 @@ const Profile = () => {
             name="startingDate"
             value={item.startingDate}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onChange={e=>handleQualificationChange(e, index)}
           />
         </div>
 
@@ -194,6 +365,7 @@ const Profile = () => {
             name="endingDate"
             value={item.endingDate}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onChange={e=>handleQualificationChange(e, index)}
           />
         </div>
       </div>
@@ -208,7 +380,8 @@ const Profile = () => {
             value={item.degree}
             placeholder="e.g. MBBS, MD"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            onChange={e=>handleQualificationChange(e, index)}
+            />
         </div>
 
         <div>
@@ -217,18 +390,19 @@ const Profile = () => {
             type="text"
             name="university"
             value={item.university}
-            placeholder="e.g. Harvard Medical School"
+            placeholder="Enter Your University Name"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={e=>handleQualificationChange(e, index)}
           />
         </div>
 
-        <button  className="p-3 rounded-full bg-red-300 text-red-600 hover:bg-red-500 hover:text-white transition duration-300 shadow-sm">
+        <button onClick={e=>deleteQualification(e,index)} className="p-3 rounded-full bg-red-300 text-red-600 hover:bg-red-500 hover:text-white transition duration-300 shadow-sm">
           <AiOutlineDelete size={20}/></button>
       </div>
     </div>
   ))}
 
-    <button className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
+    <button onClick={addQualification} className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
     >Add Qualification</button>
 
 
@@ -251,6 +425,7 @@ const Profile = () => {
             name="startingDate"
             value={item.startingDate}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onChange={e=>handleExperienceChange(e, index)}
           />
         </div>
 
@@ -261,6 +436,7 @@ const Profile = () => {
             name="endingDate"
             value={item.endingDate}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onChange={e=>handleExperienceChange(e, index)}
           />
         </div>
       </div>
@@ -273,8 +449,9 @@ const Profile = () => {
             type="text"
             name="position"
             value={item.position}
-            placeholder="e.g. MBBS, MD"
+            placeholder="Position"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={e=>handleExperienceChange(e, index)}
           />
         </div>
 
@@ -284,18 +461,19 @@ const Profile = () => {
             type="text"
             name="hospital"
             value={item.hospital}
-            placeholder="e.g. Harvard Medical School"
+            placeholder="Hospital Name"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={e=>handleExperienceChange(e, index)}
           />
         </div>
 
-        <button className="p-3 rounded-full bg-red-300 text-red-600 hover:bg-red-500 hover:text-white transition duration-300 shadow-sm">
+        <button onClick={e=>deleteExperience(e,index)} className="p-3 rounded-full bg-red-300 text-red-600 hover:bg-red-500 hover:text-white transition duration-300 shadow-sm">
           <AiOutlineDelete/></button>
       </div>
     </div>
   ))}
 
-    <button className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
+    <button onClick={addExperience} className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
     >Add Experience</button>
 
 
@@ -319,6 +497,7 @@ const Profile = () => {
       name="day"
       value={item.day}
       className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      onChange={e=>handleTimeSlotChange(e, index)}
     >
       <option value="">Select</option>
       <option value="monday">Monday</option>
@@ -339,6 +518,7 @@ const Profile = () => {
       name="startingTime"
       value={item.startingTime}
       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      onChange={e=>handleTimeSlotChange(e, index)}
     />
   </div>
 
@@ -350,6 +530,7 @@ const Profile = () => {
       name="endingTime"
       value={item.endingTime}
       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      onChange={e=>handleTimeSlotChange(e, index)}
     />
   </div>
 
@@ -357,7 +538,7 @@ const Profile = () => {
   <div className="flex items-end justify-start sm:justify-end">
     <button
       type="button"
-      onClick={() => handleDelete(index)} // Make sure you handle this function
+      onClick={e=>deleteTimeSlot(e,index)} // Make sure you handle this function
       className="p-3 rounded-full bg-red-300 text-red-600 hover:bg-red-500 hover:text-white transition duration-300 shadow-sm"
       title="Delete Slot"
     >
@@ -371,11 +552,79 @@ const Profile = () => {
     </div>
   ))}
 
-    <button className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
+    <button onClick={addTimeSlot} className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
     >Add Time Slot</button>
 
 
      </div>
+
+
+     <div className="mb-8">
+  <p className="form__label text-lg font-semibold mb-4">
+    Fellowships & Recognitions <span className="text-red-500">*</span>
+  </p>
+
+  {formData.fellowships?.map((item, index) => (
+    <div
+      key={index}
+      className="mb-6 p-5 border border-gray-300 rounded-xl shadow-sm bg-gray-50"
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Title*</label>
+          <input
+            type="text"
+            name="title"
+            value={item.title}
+            onChange={(e) => handleFellowshipChange(e, index)}
+            placeholder="Name of Title"
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Organization*</label>
+          <input
+            type="text"
+            name="organization"
+            value={item.organization}
+            onChange={(e) => handleFellowshipChange(e, index)}
+            placeholder="Your Organization Name"
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Year*</label>
+          <input
+            type="number"
+            name="year"
+            value={item.year}
+            onChange={(e) => handleFellowshipChange(e, index)}
+            placeholder="Year"
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={(e) => deleteFellowship(e, index)}
+          className="p-3 rounded-full bg-red-300 text-red-600 hover:bg-red-500 hover:text-white transition duration-300"
+        >
+          <AiOutlineDelete />
+        </button>
+      </div>
+    </div>
+  ))}
+
+  <button
+    onClick={addFellowship}
+    className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-300"
+  >
+    <AiOutlinePlus /> Add Fellowship
+  </button>
+</div>
 
      <div className="mb-6">
   <label className="form__label block text-sm font-semibold text-gray-700 mb-2">
@@ -393,6 +642,36 @@ const Profile = () => {
     {formData.about?.length || 0}/500 characters
   </p>
     </div>
+
+    <div className='mb-5 flex items-center gap-3'>
+    {formData.photo && (
+                <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-[#6366f1]">
+                  <img src={formData.photo} alt="preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="relative w-full">
+                <input
+                  type="file"
+                  id="customFile"
+                  accept=".jpg,.jpeg,.png"
+                  onChange={handleFileInputChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+                <label
+                  htmlFor="customFile"
+                  className="inline-block w-full text-center px-4 py-2 bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold rounded-lg cursor-pointer transition hover:scale-105 shadow-md"
+                >
+                  📷 Upload Photo
+                </label>
+              </div>
+    </div>
+
+    <div className="flex justify-center items-center">
+  <button type="submit" onClick={updateProfileHandler} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg shadow-md font-medium transition-all duration-200 transform hover:scale-105">
+    Update Profile
+  </button>
+</div>
+
       </form>
     </div>
   );

@@ -9,4 +9,6 @@ router
   .get(getAllReviews)
   .post(authenticate, restrict(["patient"]), createReview);
 
+  
+
 export default router;

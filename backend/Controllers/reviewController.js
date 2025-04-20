@@ -1,4 +1,4 @@
-import e from 'express';
+
 import Doctor from '../models/DoctorSchema.js';
 import Review from '../models/ReviewSchema.js';
 

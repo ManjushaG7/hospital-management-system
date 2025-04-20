@@ -28,20 +28,8 @@ const Tabs = ({ tab, setTab }) => {
 
       {/* Tabs for Desktop */}
       <div className="hidden lg:flex flex-col p-5 bg-white shadow-panelShadow items-center h-max rounded-xl">
-        {/* Availability Toggle */}
-        <div className="mb-6 w-full text-center">
-          <p className="text-sm font-semibold mb-1 text-gray-700">Availability</p>
-          <button
-            onClick={toggleAvailability}
-            className={`w-full py-2 rounded-md font-medium transition-all duration-200 ${
-              isAvailable
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-red-100 text-red-700 hover:bg-red-200'
-            }`}
-          >
-            {isAvailable ? 'Available' : 'Unavailable'}
-          </button>
-        </div>
+       
+        
 
         {/* Overview Tab */}
         <button
@@ -52,7 +40,7 @@ const Tabs = ({ tab, setTab }) => {
               : 'bg-transparent text-[#181A1E] hover:bg-[#e0eaff]'
           } w-full py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out`}
         >
-          Overview
+         🔎 Overview
         </button>
 
         {/* Appointments Tab */}
@@ -64,7 +52,7 @@ const Tabs = ({ tab, setTab }) => {
               : 'bg-transparent text-[#181A1E] hover:bg-[#e0eaff]'
           } w-full py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out mt-3`}
         >
-          Appointments
+          📝Appointments
         </button>
 
         {/* Settings Tab */}
@@ -76,7 +64,7 @@ const Tabs = ({ tab, setTab }) => {
               : 'bg-transparent text-[#181A1E] hover:bg-[#e0eaff]'
           } w-full py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out mt-3`}
         >
-          Profile
+         🪪 Profile
         </button>
 
         <div className="mt-[100px] w-full">

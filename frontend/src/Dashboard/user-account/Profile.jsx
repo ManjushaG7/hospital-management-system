@@ -124,6 +124,7 @@ const Profile = ({ userData }) => {
             value={formData.email}
             onChange={handleInputChange}
             className="w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            disabled={true}
           />
         </div>
 

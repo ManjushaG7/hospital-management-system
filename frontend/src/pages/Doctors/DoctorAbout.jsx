@@ -1,62 +1,86 @@
 import React from "react";
 import { FaUserMd, FaGraduationCap, FaHospital, FaAward } from "react-icons/fa";
 
-const DoctorAbout = ({name, about, qualifications, experiences}) => {
+// You can define the formatDate function outside or import it as needed
+const formatDate = (date) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(date).toLocaleDateString(undefined, options);
+};
+
+const DoctorAbout = ({ name, about, qualifications, experiences ,fellowships}) => {
   return (
-    <div className="mt-5">
-      {/* Header */}
-      <h3 className="text-[22px] leading-[32px] text-headingColor font-semibold flex items-center gap-2">
-        <FaUserMd className="text-primaryColor text-[26px]" />
-        About
-        <span className="text-irisBlueColor font-bold text-[24px] leading-9">
-          Ravender Babu
-        </span>
-      </h3>
+    <div className="mt-10 space-y-6">
+      {/* Header Section */}
+      <div className="border-2 border-gray-300 rounded-xl p-6 shadow-md bg-white">
+        <h3 className="text-[22px] leading-[32px] text-headingColor font-semibold flex items-center gap-2">
+          <FaUserMd className="text-primaryColor text-[26px]" />
+          About
+          <span className="text-irisBlueColor font-bold text-[24px] leading-9 ml-2">
+            {name}
+          </span>
+        </h3>
 
-      {/* Description */}
-      <p className="text-textColor text-[15px] leading-6 mt-3">
-        Dr. Ravinder Babu is a **senior consultant cardiologist** at Apollo Hospitals, Hyderabad. With over **15 years of experience**, he specializes in **interventional cardiology** and has performed numerous life-saving procedures.
-      </p>
+        <p className="text-textColor text-[15px] leading-6 mt-3">{about}</p>
+      </div>
 
-      {/* Education & Certifications */}
-      <div className="mt-6">
+      {/* Education Section */}
+      <div className="border-2 border-gray-300 rounded-xl p-6 shadow-md bg-white">
         <h4 className="text-[20px] font-semibold text-headingColor flex items-center gap-2">
           <FaGraduationCap className="text-primaryColor text-[22px]" />
-          Education & Certifications
+          Education
         </h4>
-        <ul className="list-disc pl-6 text-textColor text-[15px] leading-6 mt-2">
-          <li>MBBS – Osmania Medical College, Hyderabad</li>
-          <li>MD (General Medicine) – Osmania Medical College</li>
-          <li>DM (Cardiology) – Nizam’s Institute of Medical Sciences</li>
-          <li>MRCP – Royal College of Physicians, London</li>
+        <ul className="list-disc pl-6 text-textColor text-[15px] leading-6 mt-2 space-y-1">
+          {qualifications?.map((item, index) => (
+            <li key={index} className="flex flex-col gap-1">
+              {/* Qualification Degree with Institution */}
+              <div className="font-semibold">{item.degree} – {item.university}</div>
+
+              {/* Date Range */}
+              <div className="text-sm text-textColor">
+                {formatDate(item.startingDate)} - {formatDate(item.endingDate)}
+              </div>
+            </li>
+          ))}
         </ul>
       </div>
 
-      {/* Fellowships & Memberships */}
-      <div className="mt-6">
+      {/* Fellowships Section */}
+      <div className="border-2 border-gray-300 rounded-xl p-6 shadow-md bg-white">
         <h4 className="text-[20px] font-semibold text-headingColor flex items-center gap-2">
           <FaAward className="text-primaryColor text-[22px]" />
           Fellowships & Recognitions
         </h4>
-        <ul className="list-disc pl-6 text-textColor text-[15px] leading-6 mt-2">
-          <li>FACC – American College of Cardiology</li>
-          <li>FESC – European Society of Cardiology</li>
-          <li>FSCAI – Society for Cardiovascular Angiography & Interventions</li>
-          <li>FAPSIC – Asia-Pacific Society of Interventional Cardiology</li>
-          <li>FISE – Indian Society of Electrocardiology</li>
-          <li>FICC – Indian College of Cardiology</li>
+        <ul className="list-disc pl-6 text-textColor text-[15px] leading-6 mt-2 space-y-1">
+          {fellowships?.map((item, index) => (
+            <li key={index} className="flex flex-col gap-1">
+              {/* Fellowship Name with Institution */}
+              <div className="font-semibold">{item.title} - {item.organization} - {item.year}</div>
+
+             
+            </li>
+          ))}
         </ul>
       </div>
 
-      {/* Work Experience */}
-      <div className="mt-6">
+      {/* Work Experience Section */}
+      <div className="border-2 border-gray-300 rounded-xl p-6 shadow-md bg-white">
         <h4 className="text-[20px] font-semibold text-headingColor flex items-center gap-2">
           <FaHospital className="text-primaryColor text-[22px]" />
           Work Experience
         </h4>
-        <p className="text-textColor text-[15px] leading-6 mt-2">
-          Currently working as a **Senior Consultant Cardiologist** at **Apollo Hospitals, Jubilee Hills, Hyderabad**. He is known for his expertise in **complex cardiac interventions and patient-centric care**.
-        </p>
+        <ul className="list-disc pl-6 text-textColor text-[15px] leading-6 mt-2 space-y-1">
+          {experiences?.map((item, index) => (
+            <li key={index} className="flex flex-col gap-1">
+              {/* Job Role with Institution */}
+              <div className="font-semibold">{item.position} – {item.hospital}</div>
+
+              {/* Date Range */}
+              <div className="text-sm text-textColor">
+                {formatDate(item.startingDate)} - {formatDate(item.endingDate)}
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

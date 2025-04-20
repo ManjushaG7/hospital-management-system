@@ -6,9 +6,15 @@ const DoctorSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: Number },
   photo: { type: String },
-  ticketPrice: { type: Number },
+  opPrice: { type: Number },
+
   role: {
     type: String,
+  },
+
+  isAvailable: {
+    type: Boolean,
+    default: false, // Initially offline/unavailable
   },
 
   // Fields for doctors only
@@ -22,8 +28,14 @@ const DoctorSchema = new mongoose.Schema({
   },
 
   bio: { type: String, maxLength: 50 },
+ 
   about: { type: String },
-  timeSlots: { type: Array },
+  timeSlots: [
+    {
+      day: { type: String, required: true },
+      startingTime: { type: String, required: true },
+      endingTime: { type: String, required: true },
+    }],
   reviews: [{ type: mongoose.Types.ObjectId, ref: "Review" }],
   averageRating: {
     type: Number,
@@ -39,6 +51,17 @@ const DoctorSchema = new mongoose.Schema({
     default: "pending",
   },
   appointments: [{ type: mongoose.Types.ObjectId, ref: "Appointment" }],
+
+  fellowships: [ // 👉 Add this part
+    {
+      title: String,
+      organization: String,
+      year: String
+    }
+  ],
+
+
+ 
 });
 
 export default mongoose.model("Doctor", DoctorSchema);
